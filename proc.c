@@ -220,7 +220,9 @@ exitNew(int status)
 {
   struct proc *p;
   int fd, statusIn;
+  //cprintf("before argint: %d \n", statusIn);
   argint(0, &statusIn);
+  //cprintf("after argint: %d \n", statusIn);
   proc->exitStatus = statusIn;
   if(proc == initproc)
     panic("init exiting");
@@ -309,7 +311,9 @@ waitNew(int *status)
   struct proc *p;
   int havekids, pid;
   char *statusIn;
-  argptr(0,&statusIn, 2);
+  //cprintf("before argptr: %d \n", statusIn);
+  argptr(0,&statusIn, 4);
+  //cprintf("after argint: %d \n", statusIn);
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for zombie children.
@@ -319,8 +323,8 @@ waitNew(int *status)
         continue;
       havekids = 1;
       if(p->state == ZOMBIE){
-        if (status) {
-          *status = p->exitStatus;
+        if (statusIn) {
+          *statusIn = p->exitStatus;
         }
         // Found one.
         pid = p->pid;
@@ -339,7 +343,8 @@ waitNew(int *status)
 
     // No point waiting if we don't have any children.
     if(!havekids || proc->killed){
-      *statusIn = -1;
+      //cprintf("Wait ERR_1 \n");
+      *statusIn = proc->pid;
       release(&ptable.lock);
       return -1;
     }
@@ -358,8 +363,9 @@ waitpidNew(int pidIn, int *status, int options)
   int pid2;
   argint(0, &pid2);
   char *statusIn;
-  argptr(1,&statusIn, 2);
+  argptr(1,&statusIn, 8);
   if ((pid2 < -1) || (pid2 == 0)) {
+    //cprintf("waitpidNew_ERR_1 \n");
     return -1;
   }
   acquire(&ptable.lock);
@@ -391,7 +397,7 @@ waitpidNew(int pidIn, int *status, int options)
 
     // No point waiting if we don't have any children.
     if(!havekids || proc->killed){
-      *statusIn = -1;
+      *statusIn = pid2;
       release(&ptable.lock);
       return -1;
     }
