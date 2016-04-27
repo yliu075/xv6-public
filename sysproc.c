@@ -34,6 +34,12 @@ sys_wait(void)
 }
 
 int
+sys_waitNew(int *status)
+{
+  return waitNew(status);
+}
+
+int
 sys_kill(void)
 {
   int pid;
