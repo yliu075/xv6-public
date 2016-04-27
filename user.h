@@ -7,7 +7,7 @@ int exit(void) __attribute__((noreturn));
 int exitNew(int status);
 int wait(void);
 int waitNew(int *status);
-int waitpidNew(int pidIn, int* status, int options);
+int waitpidNew(int pidIn, int *status, int options);
 int pipe(int*);
 int write(int, void*, int);
 int read(int, void*, int);
@@ -26,6 +26,7 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int changePriorityNew(int pid, int prio);
 
 // ulib.c
 int stat(char*, struct stat*);

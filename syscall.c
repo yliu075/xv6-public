@@ -82,6 +82,7 @@ extern int sys_close(void);
 extern int sys_dup(void);
 extern int sys_exec(void);
 extern int sys_exit(void);
+extern int sys_exitNew(void);
 extern int sys_fork(void);
 extern int sys_fstat(void);
 extern int sys_getpid(void);
@@ -96,8 +97,11 @@ extern int sys_sbrk(void);
 extern int sys_sleep(void);
 extern int sys_unlink(void);
 extern int sys_wait(void);
+extern int sys_waitNew(void);
+extern int sys_waitpidNew(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
+extern int sys_changePriorityNew(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -121,7 +125,12 @@ static int (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
+[SYS_exitNew]    sys_exitNew,
+[SYS_waitNew]    sys_waitNew,
+[SYS_waitpidNew]    sys_waitpidNew,
+[SYS_changePriorityNew]    sys_changePriorityNew,
 };
+
 
 void
 syscall(void)

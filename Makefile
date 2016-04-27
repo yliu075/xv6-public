@@ -174,6 +174,10 @@ UPROGS=\
 	_zombie\
 	_HELLO_WORLD\
 	_HELLO_WORLD_NO_CHILD\
+	_wait_more\
+	_wait_one\
+	_prio_test\
+	_prio_test2\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -245,6 +249,10 @@ EXTRA=\
 	ln.c ls.c mkdir.c rm.c stressfs.c usertests.c wc.c zombie.c\
 	HELLO_WORLD.c\
 	HELLO_WORLD_NO_CHILD.c\
+	wait_more.c\
+	wait_one.c\
+	prio_test.c\
+	prio_test2.c\
 	printf.c umalloc.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\

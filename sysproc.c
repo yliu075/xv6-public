@@ -40,6 +40,19 @@ sys_waitNew(int *status)
 }
 
 int
+sys_waitpidNew(int pidIn, int *status, int options)
+{
+  return waitpidNew( pidIn, status, options);
+}
+
+int
+sys_changePriorityNew(int pid, int prio)
+{
+  changePriorityNew(pid, prio);
+  return 0;
+}
+
+int
 sys_kill(void)
 {
   int pid;

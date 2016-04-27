@@ -118,9 +118,10 @@ void            sleep(void*, struct spinlock*);
 void            userinit(void);
 int             wait(void);
 int             waitNew(int *status);
-int             waitpidNew(int pidIn, int* status, int options);
+int             waitpidNew(int pidIn, int *status, int options);
 void            wakeup(void*);
 void            yield(void);
+void            changePriorityNew(int pid, int prio);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
