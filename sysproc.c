@@ -21,6 +21,13 @@ sys_exit(void)
 }
 
 int
+sys_exitNew(int status)
+{
+  exitNew(status);
+  return 0;  // not reached
+}
+
+int
 sys_wait(void)
 {
   return wait();
