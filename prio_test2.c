@@ -25,11 +25,11 @@ int main(){
             int j = 0;
             if(getpid() == begin + 5){
                 printf(1," pid = %d, get higher priority\n\n",getpid());
-                changePriorityNew(getpid(), 3);
+                changePriorityNew(getpid(), 5);
             }
             if(getpid() == begin + 8){
                 printf(1," pid = %d, get higher priority\n\n",getpid());
-                changePriorityNew(getpid(), 4);
+                changePriorityNew(getpid(), 15);
             }
             while(j++ < 30000000);
             exitNew(0);

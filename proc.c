@@ -416,6 +416,7 @@ changePriorityNew(int pid, int prio)
   int pid2, prio2;
   argint(0, &pid2);
   argint(1, &prio2);
+  if ((prio2 == 5) || (prio2 == 15) || (prio2 == 60)) prio2--;
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     if((p->pid == pid2) || (p->parent->pid == pid2)) {
