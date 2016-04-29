@@ -361,7 +361,8 @@ int
 waitpidNew(int pidIn, int *status, int options)
 {
   struct proc *p;
-  int havekids, pid;
+  //int havekids;
+  int pid;
   int pid2;
   argint(0, &pid2);
   char *statusIn;
@@ -373,15 +374,16 @@ waitpidNew(int pidIn, int *status, int options)
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for zombie children.
-    havekids = 0;
+    //havekids = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->parent != proc)
+      //if(p->parent != proc)
+      if (p->pid != pid2)
         continue;
-      havekids = 1;
-      if(p->state == ZOMBIE){
-        if (statusIn) {
-          *statusIn = p->exitStatus;
-        }
+      //havekids = 1;
+      //if(p->state == ZOMBIE){
+        //if (statusIn) {
+          *statusIn = p->exitStatus = 5;
+        //}
         // Found one.
         pid = p->pid;
         kfree(p->kstack);
@@ -394,15 +396,15 @@ waitpidNew(int pidIn, int *status, int options)
         p->killed = 0;
         release(&ptable.lock);
         return pid;
-      }
+      //}
     }
 
     // No point waiting if we don't have any children.
-    if(!havekids || proc->killed){
+    //if(!havekids || proc->killed){
       *statusIn = p->exitStatus = 5;
       release(&ptable.lock);
-      return pid2;
-    }
+      return -1;
+    //}
 
     // Wait for children to exit.  (See wakeup1 call in proc_exit.)
     sleep(proc, &ptable.lock);  //DOC: wait-sleep
@@ -420,6 +422,7 @@ changePriorityNew(int pid, int prio)
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     if((p->pid == pid2) || (p->parent->pid == pid2)) {
+      //if (p->priority > 63) cprintf("ERR: changePriorityNew");
       p->priority = prio2;
       //cprintf("Change: pid = %d, prio = %d\n", p->pid, p->priority);
       release(&ptable.lock);
