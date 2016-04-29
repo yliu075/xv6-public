@@ -100,6 +100,7 @@ userinit(void)
   p->cwd = namei("/");
 
   p->state = RUNNABLE;
+  p->priority = 5;
 }
 
 // Grow current process's memory by n bytes.
@@ -134,7 +135,8 @@ fork(void)
   // Allocate process.
   if((np = allocproc()) == 0)
     return -1;
-
+  np->priority = 15;
+  //np->parent->priority = 10;
   // Copy process state from p.
   if((np->pgdir = copyuvm(proc->pgdir, proc->sz)) == 0){
     kfree(np->kstack);
@@ -163,8 +165,8 @@ fork(void)
   np->state = RUNNABLE;
   release(&ptable.lock);
   
-  np->priority = 5;
-  np->parent->priority = 25;
+  // if (np->priority == 0) np->priority = 15;
+  // if ((np->parent->priority == 0) || (np->parent->priority == 15)) np->parent->priority = 20;
   
   return pid;
 }
@@ -344,7 +346,7 @@ waitNew(int *status)
     // No point waiting if we don't have any children.
     if(!havekids || proc->killed){
       //cprintf("Wait ERR_1 \n");
-      *statusIn = proc->pid;
+      *statusIn = p->exitStatus = 5;
       release(&ptable.lock);
       return -1;
     }
@@ -364,7 +366,7 @@ waitpidNew(int pidIn, int *status, int options)
   argint(0, &pid2);
   char *statusIn;
   argptr(1,&statusIn, 8);
-  if ((pid2 < -1) || (pid2 == 0)) {
+  if (pid2 <= -1) {
     //cprintf("waitpidNew_ERR_1 \n");
     return -1;
   }
@@ -397,9 +399,9 @@ waitpidNew(int pidIn, int *status, int options)
 
     // No point waiting if we don't have any children.
     if(!havekids || proc->killed){
-      *statusIn = pid2;
+      *statusIn = p->exitStatus = 5;
       release(&ptable.lock);
-      return -1;
+      return pid2;
     }
 
     // Wait for children to exit.  (See wakeup1 call in proc_exit.)
@@ -411,11 +413,19 @@ void
 changePriorityNew(int pid, int prio)
 {
   struct proc *p;
+  int pid2, prio2;
+  argint(0, &pid2);
+  argint(1, &prio2);
+  acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-    if((p->pid == pid) || (p->parent->pid == pid)) {
-      p->priority = prio;
+    if((p->pid == pid2) || (p->parent->pid == pid2)) {
+      p->priority = prio2;
+      cprintf("Change: pid = %d, prio = %d\n", p->pid, p->priority);
+      release(&ptable.lock);
+      return;
     }
   }
+  //release(&ptable.lock);
 }
 ////////////////////////////////////////////////////////////////////////
 //PAGEBREAK: 42
@@ -426,7 +436,7 @@ changePriorityNew(int pid, int prio)
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
-  ////////////////////////////////////////////////// Original Scheduler
+/*  ////////////////////////////////////////////////// Original Scheduler
 void
 scheduler(void)
 {
@@ -459,53 +469,56 @@ scheduler(void)
 
   }
 }
-
+*/
 ///////////////////////////////////////////////////////////////////////
-/*
+
 void
 scheduler(void)
 {
+  //cprintf("Using new Scheduler\n");
   struct proc *p;
-  struct proc *highestPrio;
+  int prio3 = 0;
   for(;;){
     // Enable interrupts on this processor.
     sti();
-
+    //cprintf("In First For Loop\n");
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    highestPrio = ptable.proc;
+    
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      //cprintf("In Second For Loop, prio3 = %d\n", prio3);
       if(p->state != RUNNABLE)
         continue;
-      if((highestPrio->priority) > (p->priority)) {
-        highestPrio = p;
-      }
-    }
-    // for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    //   if(p->state != RUNNABLE)
-    //     continue;
-    //   if(p == highestPrio) {
+
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-      if (p == highestPrio && p->state == RUNNABLE) {
-        p = highestPrio;
+      if (p->priority <= prio3) {
+        if (p->pid > 3) {
+          //cprintf("PID: %d of prio %d at prio3 = %d\n", p->pid, p->priority, prio3);
+        }
         proc = p;
         switchuvm(p);
         p->state = RUNNING;
         swtch(&cpu->scheduler, proc->context);
         switchkvm();
+        prio3 = 0;
+      }
+      // else {
+      //   prio3++;
+      // }
       // Process is done running for now.
       // It should have changed its p->state before coming back.
-        
-      }
+      proc = 0;
     }
-    proc = 0;
+    prio3++;
+    if (prio3 == 63) prio3 = 0;
+    //cprintf("curr prio3 = %d\n", prio3);
     release(&ptable.lock);
 
   }
-}*/
+}
+
 ///////////////////////////////////////////////////////////////////////
 
 // Enter scheduler.  Must hold only ptable.lock

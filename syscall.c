@@ -102,6 +102,7 @@ extern int sys_waitpidNew(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_changePriorityNew(void);
+extern int sys_findHighestPrioNew(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -129,6 +130,7 @@ static int (*syscalls[])(void) = {
 [SYS_waitNew]    sys_waitNew,
 [SYS_waitpidNew]    sys_waitpidNew,
 [SYS_changePriorityNew]    sys_changePriorityNew,
+[SYS_findHighestPrioNew]    sys_findHighestPrioNew,
 };
 
 

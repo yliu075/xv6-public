@@ -27,6 +27,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int changePriorityNew(int pid, int prio);
+int findHighestPrioNew(void);
 
 // ulib.c
 int stat(char*, struct stat*);

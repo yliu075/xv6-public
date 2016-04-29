@@ -53,6 +53,13 @@ sys_changePriorityNew(int pid, int prio)
 }
 
 int
+sys_findHighestPrioNew(void)
+{
+  changePriorityNew();
+  return 0;
+}
+
+int
 sys_kill(void)
 {
   int pid;

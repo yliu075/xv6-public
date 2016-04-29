@@ -122,6 +122,7 @@ int             waitpidNew(int pidIn, int *status, int options);
 void            wakeup(void*);
 void            yield(void);
 void            changePriorityNew(int pid, int prio);
+struct proc*    findHighestPrioNew(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

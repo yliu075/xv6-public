@@ -20,3 +20,8 @@
 #define SYS_link   19
 #define SYS_mkdir  20
 #define SYS_close  21
+#define SYS_exitNew 22
+#define SYS_waitNew 23
+#define SYS_waitpidNew 24
+#define SYS_changePriorityNew 25
+#define SYS_findHighestPrioNew 26
