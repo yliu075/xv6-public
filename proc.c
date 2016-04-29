@@ -420,7 +420,7 @@ changePriorityNew(int pid, int prio)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     if((p->pid == pid2) || (p->parent->pid == pid2)) {
       p->priority = prio2;
-      cprintf("Change: pid = %d, prio = %d\n", p->pid, p->priority);
+      //cprintf("Change: pid = %d, prio = %d\n", p->pid, p->priority);
       release(&ptable.lock);
       return;
     }
@@ -471,54 +471,89 @@ scheduler(void)
 }
 */
 ///////////////////////////////////////////////////////////////////////
+struct proc* findHighestPrioNew(void) {
+  struct proc *p;
+  struct proc *q;
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if (p->state != RUNNABLE) continue;
+    if (q == 0 || ((p->priority) < (q->priority)) ) {
+      q = p;
+    }
+  }
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if (p == q) {
+      //cprintf("YES\n");
+      break;
+    }
+  }
+  //release(&ptable.lock);
+  return p;
+}
+
+///////////////////////////////////////////////////////////////////////
 
 void
 scheduler(void)
 {
-  //cprintf("Using new Scheduler\n");
   struct proc *p;
-  int prio3 = 0;
+  
   for(;;){
+    int pid3 = -1;
+    int highestPrio = 60;
+    char prioMode = 0;
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state != RUNNABLE) continue;
+      if ((pid3 == -1) || (p->priority < highestPrio)) {
+        pid3 = p->pid;
+        highestPrio = p->priority;
+        //cprintf("PID: %d has highestPrio = %d \n", pid3, highestPrio);
+      }
+    }
+    if ((highestPrio != 15) && (highestPrio != 5) && (highestPrio != 60)) {
+      prioMode = 1;
+      //cprintf("PrioMode ON because PID:%d with prio: %d\n", pid3, highestPrio);
+    }
+    else prioMode = 0;
     // Enable interrupts on this processor.
     sti();
-    //cprintf("In First For Loop\n");
+
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      //cprintf("In Second For Loop, prio3 = %d\n", prio3);
       if(p->state != RUNNABLE)
         continue;
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
-      if (p->priority <= prio3) {
-        if (p->pid > 3) {
-          //cprintf("PID: %d of prio %d at prio3 = %d\n", p->pid, p->priority, prio3);
+      if (prioMode) {
+        if (p->pid == pid3) {
+          //if (p->pid > 3) cprintf("PID: %d of prio %d\n", p->pid, p->priority);
+          proc = p;
+          switchuvm(p);
+          p->state = RUNNING;
+          swtch(&cpu->scheduler, proc->context);
+          switchkvm();
         }
+      }
+      else {
+        //if (p->pid > 3) cprintf("PID: %d of prio %d\n", p->pid, p->priority);
         proc = p;
         switchuvm(p);
         p->state = RUNNING;
         swtch(&cpu->scheduler, proc->context);
         switchkvm();
-        prio3 = 0;
       }
-      // else {
-      //   prio3++;
-      // }
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       proc = 0;
+      //}
     }
-    prio3++;
-    if (prio3 == 63) prio3 = 0;
-    //cprintf("curr prio3 = %d\n", prio3);
     release(&ptable.lock);
 
   }
 }
-
 ///////////////////////////////////////////////////////////////////////
 
 // Enter scheduler.  Must hold only ptable.lock
